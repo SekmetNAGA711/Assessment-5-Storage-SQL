@@ -1,3 +1,9 @@
+require('dotenv').config()
+const{CONNECTION_STRING} = process.env
+const Sequelize = require('sequelize')
+
+const sequelize = new Sequelize(CONNECTION_STRING)
+
 
 
 module.exports = {
@@ -6,12 +12,17 @@ module.exports = {
             drop table if exists cities;
             drop table if exists countries;
 
-            create table countries (
-                country_id serial primary key, 
+            CREATE TABLE countries (
+                country_id SERIAL PRIMARY KEY, 
                 name varchar
             );
 
-            *****YOUR CODE HERE*****
+           CREATE TABLE cities (
+            city_id SERIAL PRIMARY KEY,
+            name VARCHAR,
+            rating INT,
+            country_id INT REFERENCES countries(country_id)
+           );
 
             insert into countries (name)
             values ('Afghanistan'),
@@ -213,5 +224,31 @@ module.exports = {
             console.log('DB seeded!')
             res.sendStatus(200)
         }).catch(err => console.log('error seeding DB', err))
+    },
+    getCountries: (req,res) =>{
+         sequelize.query(`
+          SELECT country_id, name FROM countries;
+        `)
+        .then((dbRes)=> res.status(200).send(dbRes[0]))     
+    },
+    createCity: (req, res) => {
+        const {name, rating, country_id} = req.body
+        sequelize.query(`
+            INSERT INTO cities (name, rating, country_id)
+            VALUES('${name}', ${rating}, ${country_id})
+        `).then((dbRes)=> res.status(200).send(dbRes[0]))  
+    },
+    getCities: (req, res) => {
+        sequelize.query(`
+        SELECT f.country_id, f.name AS country, w.city_id, w.name AS city, w.rating FROM countries f JOIN cities w ON w.country_id = f.country_id
+        `).then((dbRes)=> res.status(200).send(dbRes[0])) 
+    },
+    deleteCity: (req, res) =>{
+        const {id} = req.params
+        sequelize.query(`
+        DELETE FROM cities
+        WHERE city_id = ${id}
+        `).then((dbRes)=> res.status(200).send(dbRes[0])) 
     }
+    
 }

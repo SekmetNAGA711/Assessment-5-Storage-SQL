@@ -15,7 +15,7 @@ function handleSubmit(e) {
     let body = {
         name: nameInput.value, 
         rating: +userRating, 
-        countryId: +countrySelect.value
+        country_id: +countrySelect.value
     }
 
     axios.post('http://localhost:4004/cities', body)
